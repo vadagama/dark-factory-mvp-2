@@ -1,0 +1,19 @@
+# Node / pnpm
+node_modules/
+*.tsbuildinfo
+
+# Сборка
+dist/
+coverage/
+
+# Переменные окружения
+.env
+.env.*
+!.env.example
+
+# Рантайм-данные фабрики (SQLite-состояние, workspaces, артефакты) — см. ADR-0002
+data/
+workspaces/
+
+# OS
+.DS_Store
