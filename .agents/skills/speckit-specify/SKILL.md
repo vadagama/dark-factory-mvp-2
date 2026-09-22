@@ -84,7 +84,7 @@ Given that feature description, do this:
    git push -u origin feat/t-<NNN>-<slug>
    ```
 
-   `<NNN>` — the feature number determined by the numbering rules of step 3 below (or `FEATURE_NUM` from the hook); `<slug>` — the short name from step 1. The spec directory name and the git branch name are independent.
+   `<NNN>` — the task number from the global task counter (not feature-specific; the feature number is only the directory prefix `specs/<NNN>-<slug>/`), or `FEATURE_NUM` from the hook; `<slug>` — the short name from step 1. The spec directory name and the git branch name are independent.
 
    If the user explicitly provided `GIT_BRANCH_NAME`, use it as the branch name instead of the generated one (still created off a fresh `main` and pushed).
 

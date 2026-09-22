@@ -79,7 +79,7 @@ SDD-фича (`/speckit-specify` → `/speckit-plan` → `/speckit-tasks` →
 
 | Момент | Действие | Результат |
 |---|---|---|
-| Начало `/speckit-specify` | Шаг 1: синхронизировать `main`, создать и запушить `feat/t-<NNN>-<slug>` (NNN — номер фичи, числовой префикс каталога `specs/<NNN>-<slug>/`) | Ветка задачи в origin |
+| Начало `/speckit-specify` | Шаг 1: синхронизировать `main`, создать и запушить `feat/t-<NNN>-<slug>` (NNN — номер задачи по общему счётчику; номер фичи — только префикс каталога `specs/<NNN>-<slug>/`) | Ветка задачи в origin |
 | `/speckit-specify` … `/speckit-tasks` | Коммиты артефактов (`docs: …`) в ветку задачи | SDD-артефакты в ветке |
 | Завершение `/speckit-implement` | Коммит реализации (`feat: …`), проверки (`pnpm build` / `pnpm test`), пуш и открытие MR против `main` с описанием и evidence | Открытый MR |
 
