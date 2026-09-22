@@ -1,7 +1,8 @@
 # Анализ инициализации dark-factory-mvp-2: архитектура v4
 
 - **Дата**: 2026-09-22
-- **Статус**: черновик для обсуждения — открытые вопросы (§4) и состав ADR (§5) требуют утверждения
+- **Статус**: черновик для обсуждения — открытые вопросы (§4) и состав ADR (§5) требуют утверждения;
+  Q3/Q4 утверждены 2026-09-22 (§4 обновлён, добавлен ADR-0013)
 - **Ветка**: `init`
 - **Источники**:
   - Notion «Архитектура v4» (2026-09-21, 12 страниц) — самое свежее видение, база нового проекта;
@@ -52,8 +53,8 @@ PostgreSQL, React Console, Helm/Argo/K8s-деплой, Native SDD Core как к
 |---|---|---|---|---|
 | Q1 | **Канон состояния** | (а) SQLite-канон (Notion); (б) Git + `events.jsonl` канон, SQLite — проекция (ADR-053) | **(а) SQLite-канон** | Notion новее и детальнее: доменное изменение + событие в одной транзакции, протокол записи артефактов (temp→validate→rename→register), `prepared/unknown` статусы внешних операций, backup вместо rebuild. Отказ от rebuild-теста — осознанная потеря, компенсируется 8 сценариями восстановления (Notion стр. 10 §9). Журнал событий остаётся в SQLite — проекции/rebuild можно добавить позже |
 | Q2 | **Хост ядра** | (а) Отдельное приложение (Notion); (б) Cordis-сервис в DSH (ADR-051) | **(а) Отдельное приложение** | Notion: «фабрика может оставаться отдельным приложением и не встраивать Cordis в собственное ядро»; DSH — зафиксированный движок за SDK-адаптером. Проще MVP: один процесс, локальный IPC. Cordis — форма поставки в будущем |
-| Q3 | **Интерфейс оператора MVP** | (а) CLI-first (Notion); (б) DSH Web-плагин + endpoint (ADR-055) | **(а) CLI-first** | 6 команд (start/status/resume/cancel/submit-input/submit-decision), без постоянного HTTP-сервера; второй процесс — через IPC к владельцу. Console — после MVP (снимок + события по sequence уже предусмотрены) |
-| Q4 | **VCS-платформа первой** | (а) GitHub (ADR-019); (б) GitLab (примеры Notion: `small.vcs-gitlab`, GitLab CI/MR) | **(б) GitLab** — требует подтверждения | Notion последовательно использует GitLab и SMALL-контекст (e-commerce, OMS/WMS/кассы/1С). Если продуктовые репозитории SMALL в GitLab — GitLab первым. Один VCS Provider в MVP в любом случае |
+| Q3 | **Интерфейс оператора MVP** | (а) CLI-first (Notion); (б) DSH Web-плагин + endpoint (ADR-055) | **(а) CLI-first** | 6 команд (start/status/resume/cancel/submit-input/submit-decision), без постоянного HTTP-сервера; второй процесс — через IPC к владельцу. Console — после MVP (снимок + события по sequence уже предусмотрены). Утверждено 2026-09-22; инструментарий CLI зафиксирован в ADR-0013 (Commander + Clack, Ink — позже) |
+| Q4 | **VCS-платформа первой** | (а) GitHub (ADR-019); (б) GitLab (примеры Notion: `small.vcs-gitlab`, GitLab CI/MR) | **(а) GitHub** — утверждено 2026-09-22 | Первым — GitHub; VCS Provider-адаптер допускает GitHub или GitLab в зависимости от задачи/продукта — платформа выбирается конфигурацией, ядро знает только контракт адаптера (ADR-0006). GitLab — второй целевой provider (примеры Notion: SMALL-контекст, e-commerce, OMS/WMS/кассы/1С) |
 | Q5 | **Критерий готовности MVP-2** | (а) Фича Go/React + багфикс до тест-сервера (Notion стр. 9); (б) сквозной `prd-calc` (v1 M4) | **(а)** | Notion: «разработка небольшой фичи существующего Go/React-продукта и исправление воспроизводимого дефекта. Оба должны дойти до тестового сервера с подтверждением результата» |
 | Q6 | **OKF-слой (ADR-054)** | (а) Не переносить: baseline/ рядом с кодом + фронтматтер + валидация в гейтах; (б) переносить factory-okf | **(а)** | Notion заменяет OKF-проекцию каталогом `baseline/` + `baseline-impact.md` + `.factory/product.yaml` + гейтом согласованности. Базовые проверки (уникальность id, разрешимость ссылок, покрытие задачами) — check-типы гейтов. factory-okf — по потребности после пилота |
 | Q7 | **DecisionPort (ADR-057)** | (а) Отложить; (б) переносить | **(а) Отложить** | Notion не требует семантического decision-слоя: решения — через Question/submit-decision и политики риска. Вернуться после пилота |
@@ -74,13 +75,14 @@ must-keep и переносимые по смыслу решения v1 впис
 | ADR-0003 | Модель домена: Change/Run/StageRun/Attempt/Artifact/Workspace/ExternalOperation/Question/Decision; generation; retry ≠ rework; один владелец состояния | Notion стр. 2, 6, 10 | must-keep 1–3 |
 | ADR-0004 | Декларативный процесс: YAML Process/Gate/Policy/ProductProfile + MD Role/Instruction/Skill; executor'ы harness/command/integration/gate; валидация и снимок конфигурации; YAML — не язык программирования | Notion стр. 3, 12 | ADR-052, must-keep 4, 9 |
 | ADR-0005 | Гейты и проверки: Check ≠ Finding ≠ Gate; GateResult; evidence привязан к commit/digest; локальные проверки — первичный источник, CI — доставка | Notion стр. 3, 7 | must-keep 2, 3, 6 |
-| ADR-0006 | Интеграции и доставка: Git/VCS/Delivery адаптеры; ветки `factory/change-NN/...`; последовательная очередь интеграции; merge gate ≠ delivery gate; DeliveryAdapter-контракт | Notion стр. 8 | ADR-019 (по решению Q4), must-keep 8, 10 |
+| ADR-0006 | Интеграции и доставка: Git/VCS/Delivery адаптеры; ветки `factory/change-NN/...`; последовательная очередь интеграции; merge gate ≠ delivery gate; DeliveryAdapter-контракт | Notion стр. 8 | ADR-019 (переносится: GitHub-first — Q4 утверждён), must-keep 8, 10 |
 | ADR-0007 | Спека и baseline: Spec Kit as-is (Assessment/SDD/BugFixing), workflow engine не используется; baseline/ рядом с кодом, `.factory/product.yaml`, фронтматтер, гейт согласованности baseline | Notion стр. 5, 9 | ADR-054 (не переносится; OKF — по Q6) |
 | ADR-0008 | Оператор: CLI-first, 6 команд, commandId-идемпотентность; Console — после MVP | Notion стр. 10 | ADR-055 (не переносится) |
 | ADR-0009 | Релизная модель: monorepo `packages/*`, манифест релиза, launcher, стабильные этапы 0.1–0.6; rollback-политика; изоляция кандидата | Notion стр. 11, 12 | ADR-056 (имя — по Q8) |
 | ADR-0010 | Плагины: 2 уровня (фабрика/DSH), минимальный Plugin API (манифест, namespace, разрешения-декларации), границы доверия; недоверенные — вне процесса | Notion стр. 12 | — |
 | ADR-0011 | Безопасность: machine-аккаунт, роли allow/deny + write_scopes, untrusted продуктовый слой, redaction, секреты вне git; TypeScript-интерфейс — не граница безопасности | Notion стр. 4, 12 + must-keep 5, 10 | must-keep 5, 7, 10 |
-| ADR-0012 | Спорные переносы: риск-классы (Q9), механики DSH (Q10), GitHub/GitLab-first (Q4) — фиксируются после решения вопросов | ADR-019, ADR-023, ADR-058 по смыслу | — |
+| ADR-0012 | Переносимые решения v1: риск-классы (Q9), механики DSH (Q10), VCS-first GitHub (Q4, утверждено 2026-09-22) | ADR-019, ADR-023, ADR-058 по смыслу | — |
+| ADR-0013 | Инструментарий CLI: Commander + Clack в MVP; Ink — позже (интерактивный чат с агентами); oclif/OpenTUI — не сейчас; плагины отделены от CLI-команд | Notion-страница «CLI» (2026-09-22), Q3 | — (дополнение к ADR-0008) |
 
 **Не переносятся** (противоречат Notion v4 или поглощены): ADR-051 (Cordis-хост), ADR-053
 (events.jsonl-канон), ADR-054 (OKF-канонический слой), ADR-055 (оператор в DSH), ADR-057
@@ -138,7 +140,7 @@ Notion стр. 11), `baseline/` (живёт в продуктовых репоз
 
 ## 9. Следующие шаги (после утверждения §4/§5)
 
-1. Записать утверждённые ADR-0001…0012 в `docs/adr/` + канонизировать HLD v4 в `docs/hld.md`.
+1. Записать утверждённые ADR-0001…0013 в `docs/adr/` + канонизировать HLD v4 в `docs/hld.md`.
 2. Создать `AGENTS.md` нового репо (конвейер, DoD, ветки `feat/t-NNN-<slug>`).
 3. `/speckit-constitution` — конституция проекта v4.
 4. `/speckit-specify` фичи 001 — этап 0.1 «Исполнение» (CLI → адаптер → DSH → результат).
