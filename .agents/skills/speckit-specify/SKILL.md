@@ -70,11 +70,23 @@ Given that feature description, do this:
      - "Create a dashboard for analytics" → "analytics-dashboard"
      - "Fix payment processing timeout bug" → "fix-payment-timeout"
 
-2. **Branch creation** (optional, via hook):
+2. **Branch creation** (MANDATORY in this repository):
 
-   If a `before_specify` hook ran successfully in the Pre-Execution Checks above, it will have created/switched to a git branch and output JSON containing `BRANCH_NAME` and `FEATURE_NUM`. Note these values for reference, but the branch name does **not** dictate the spec directory name.
+   If a `before_specify` hook ran successfully in the Pre-Execution Checks above, it will have created/switched to a git branch and output JSON containing `BRANCH_NAME` and `FEATURE_NUM`. Note these values for reference; the branch name does **not** dictate the spec directory name.
 
-   If the user explicitly provided `GIT_BRANCH_NAME`, pass it through to the hook so the branch script uses the exact value as the branch name (bypassing all prefix/suffix generation).
+   If no hook created a branch, you MUST create it yourself **before creating or writing any files under `specs/`** — this is a hard project rule (`AGENTS.md`, `docs/development-workflow.md`; trunk-based development: a short-lived task branch off a fresh `main`):
+
+   ```sh
+   git fetch origin --prune
+   git checkout main
+   git pull --rebase origin main
+   git checkout -b feat/t-<NNN>-<slug>
+   git push -u origin feat/t-<NNN>-<slug>
+   ```
+
+   `<NNN>` — the feature number determined by the numbering rules of step 3 below (or `FEATURE_NUM` from the hook); `<slug>` — the short name from step 1. The spec directory name and the git branch name are independent.
+
+   If the user explicitly provided `GIT_BRANCH_NAME`, use it as the branch name instead of the generated one (still created off a fresh `main` and pushed).
 
 3. **Create the spec feature directory**:
 
@@ -270,12 +282,13 @@ Check if `.specify/extensions.yml` exists in the project root.
 ## Completion Report
 
 Report completion to the user with:
+- `TASK_BRANCH` — the task branch created for this feature (from the hook's `BRANCH_NAME` or the mandatory manual step above)
 - `SPECIFY_FEATURE_DIRECTORY` — the feature directory path
 - `SPEC_FILE` — the spec file path
 - Checklist results summary
 - Readiness for the next phase (`/speckit-clarify` or `/speckit-plan`)
 
-**NOTE:** Branch creation is handled by the `before_specify` hook (git extension). Spec directory and file creation are always handled by this core command.
+**NOTE:** Branch creation is handled by the `before_specify` hook (git extension) or, if no hook ran, by the agent as a mandatory step above — before any spec files are written. Spec directory and file creation are always handled by this core command.
 
 ## Quick Guidelines
 
@@ -340,6 +353,7 @@ Success criteria must be:
 
 ## Done When
 
+- [ ] Task branch created off fresh `main` and pushed (`TASK_BRANCH`), before any spec files were written
 - [ ] Specification written to `SPEC_FILE` and validated against quality checklist
 - [ ] Extension hooks dispatched or skipped according to the rules in Mandatory Post-Execution Hooks above
-- [ ] Completion reported to user with feature directory, spec file path, and checklist results
+- [ ] Completion reported to user with task branch, feature directory, spec file path, and checklist results

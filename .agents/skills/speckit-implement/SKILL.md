@@ -179,6 +179,16 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit-tasks` first to regenerate the task list.
 
+10. **Open MR (MANDATORY in this repository)**:
+
+    Feature completion ends with an MR, not with a local branch (trunk-based development; `AGENTS.md`, `docs/development-workflow.md`). After all tasks are completed and validated:
+
+    - Commit all task files with Conventional Commits, e.g. `feat: <summary> (t-<NNN>)`
+    - Push the task branch to origin: `git push -u origin HEAD`
+    - Open an MR/PR against `main` with: change summary, affected ADRs/docs, and evidence from step 9 validation (`pnpm build` / `pnpm test` results)
+    - Merge is performed by a human only — do NOT merge, do NOT push to `main`
+    - If the branch already has an open MR, report its URL instead of opening a duplicate
+
 ## Mandatory Post-Execution Hooks
 
 **You MUST complete this section before reporting completion to the user.**
@@ -216,11 +226,12 @@ Check if `.specify/extensions.yml` exists in the project root.
 
 ## Completion Report
 
-Report final status with summary of completed work.
+Report final status with summary of completed work, including the task branch and the MR URL (feature completion ends with an MR against `main` — step 10).
 
 ## Done When
 
 - [ ] All tasks in tasks.md completed and marked `[X]`
 - [ ] Implementation validated against specification, plan, and test coverage
+- [ ] Task branch pushed and MR opened against `main` (merge left to a human; step 10)
 - [ ] Extension hooks dispatched or skipped according to the rules in Mandatory Post-Execution Hooks above
-- [ ] Completion reported to user with summary of completed work
+- [ ] Completion reported to user with summary of completed work and the MR URL
